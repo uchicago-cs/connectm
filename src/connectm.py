@@ -25,6 +25,7 @@ Examples:
 
 """
 import copy
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, List, Union
 
@@ -33,8 +34,7 @@ PieceColor = Enum("PieceColor", ["RED", "YELLOW"])
 Enum type for representing piece colors.
 """
 
-
-class ConnectMBoard:
+class BaseConnectM(ABC):
     """
     Class for representing a Connect-M board
     """
@@ -43,9 +43,6 @@ class ConnectMBoard:
     # PRIVATE ATTRIBUTES
     #
 
-    # The board itself
-    _board: List[List[Optional[PieceColor]]]
-
     # Number of rows and columns
     _nrows: int
     _ncols: int
@@ -53,8 +50,6 @@ class ConnectMBoard:
     # Number of contiguous pieces needed to win
     _m: int
 
-    # The winner (if any) on the board
-    _winner: Optional[PieceColor]
 
     #
     # PUBLIC METHODS
@@ -75,11 +70,177 @@ class ConnectMBoard:
         if ncols < m:
             raise ValueError(f"Number of columns ({ncols}) must be at least M ({m}")
 
-        self._board = [[None] * ncols for _ in range(nrows)]
-        self._top = [0] * ncols
         self._nrows = nrows
         self._ncols = ncols
         self._m = m
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """ Returns a string representation of the board """
+        raise NotImplementedError
+
+    @abstractmethod
+    def can_drop(self, col: int) -> bool:
+        """ Checks if a piece can be dropped into a column
+
+        Args:
+            col (int): Column index
+
+        Raises:
+            ValueError: if col is not a valid column index
+
+        Returns:
+            bool: True if a piece can be dropped in the
+            specified column. False otherwise.
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def drop_wins(self, col: int, color: PieceColor) -> bool:
+        """ Checks whether dropping a piece in this
+        column will result in a win.
+
+        Args:
+            col: Column index
+            color: Color of the piece to drop
+
+        Raises:
+            ValueError: if col is not a valid column index,
+            or if the column is already full.
+
+        Returns:
+            bool: True if dropping a piece of the given
+            color would result in a win; False otherwise.
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def drop(self, col: int, color: PieceColor) -> None:
+        """ Drops a piece in a column
+
+        Args:
+            col: Column index
+            color: Color of the piece to drop
+
+        Raises:
+            ValueError: if col is not a valid column index,
+            or if the column is already full.
+
+        Returns: None
+
+        """
+
+        # After dropping the piece, we would use _winner_at
+        # to check whether adding that piece results in a
+        # winning row/column/diagonal. If there is a winner
+        # we update the _winner attribute.
+        raise NotImplementedError
+
+    @abstractmethod
+    def reset(self) -> None:
+        """ Resets the board (removes all pieces)
+
+        Args: None
+
+        Returns: None
+
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def done(self) -> bool:
+        """ Checks whether the game is done
+
+        A game can be done either because there is a winner,
+        or because no more pieces can be dropped
+
+        Args: None
+
+        Returns:
+            bool: True if the game is done. False otherwise.
+
+        """
+        raise NotImplementedError        
+
+    @property
+    @abstractmethod
+    def winner(self) -> Optional[PieceColor]:
+        """ Returns the winner (if any) in the board
+
+        Returns:
+            Optional[PieceColor]: If there is a winner,
+            return its color. Otherwise, return None.
+
+        """
+        # Only needs to return the value of _winner
+        # (does not check for a winner in every cell
+        # of the board)
+        raise NotImplementedError
+
+    @property
+    def num_cols(self) -> int:
+        """ Returns the number of columns in the board"""
+        return self._ncols
+
+    @property
+    def num_rows(self) -> int:
+        """ Returns the number of rows in the board"""
+        return self._nrows
+
+    @property
+    def m(self) -> int:
+        """ Returns the number of contiguous pieces
+            needed to win"""
+        return self._m
+
+    @property
+    @abstractmethod
+    def grid(self) -> List[List[Optional[PieceColor]]]:
+        """ Returns the board as a list of list of PieceColors
+
+        Returns:
+            list[list[PieceColor]]: A list of lists with the same
+            dimensions as the board. In each row, the values
+            in the list will be None (no piece), PieceColor.RED
+            (red piece), or PieceColor.YELLOW (yellow piece)
+        """    
+        raise NotImplementedError
+
+
+class ConnectM(BaseConnectM):
+    """
+    Class for representing a Connect-M board
+    """
+
+    #
+    # PRIVATE ATTRIBUTES
+    #
+
+    # The board itself
+    _board: List[List[Optional[PieceColor]]]
+
+    # The winner (if any) on the board
+    _winner: Optional[PieceColor]
+
+    #
+    # PUBLIC METHODS
+    #
+
+    def __init__(self, nrows: int, ncols: int, m: int):
+        """
+        Constructor
+
+        Args:
+            nrows (int): Number of rows
+            ncols (int): Number of columns
+            m (int): Number of contiguous pieces needed to win
+        """
+        super().__init__(nrows, ncols, m)
+        self._board = [[None] * ncols for _ in range(nrows)]
+        self._top = [0] * ncols
         self._winner = None
 
     def __str__(self) -> str:
@@ -107,7 +268,7 @@ class ConnectMBoard:
             col (int): Column index
 
         Raises:
-            ValueError: if col is not a valid column index
+            IndexError: if col is not a valid column index
 
         Returns:
             bool: True if a piece can be dropped in the
@@ -188,7 +349,8 @@ class ConnectMBoard:
 
         self._winner = None
 
-    def is_done(self) -> bool:
+    @property
+    def done(self) -> bool:
         """ Checks whether the game is done
 
         A game can be done either because there is a winner,
@@ -200,7 +362,7 @@ class ConnectMBoard:
             bool: True if the game is done. False otherwise.
 
         """
-        if self.get_winner() is not None:
+        if self.winner is not None:
             return True
         else:
             # Check if all the columns are full
@@ -209,7 +371,8 @@ class ConnectMBoard:
                     return False
             return True
 
-    def get_winner(self) -> Optional[PieceColor]:
+    @property
+    def winner(self) -> Optional[PieceColor]:
         """ Returns the winner (if any) in the board
 
         Returns:
@@ -219,11 +382,8 @@ class ConnectMBoard:
         """
         return self._winner
 
-    def get_num_cols(self) -> int:
-        """ Returns the number of columns in the board"""
-        return self._ncols
-
-    def to_piece_grid(self) -> List[List[Optional[PieceColor]]]:
+    @property
+    def grid(self) -> List[List[Optional[PieceColor]]]:
         """ Returns the board as a list of list of PieceColors
 
         Not suitable for JSON serialization, but can be useful
@@ -239,28 +399,6 @@ class ConnectMBoard:
         # The expected return type happens to be our internal
         # representation for the board, so we just return a copy
         return copy.deepcopy(self._board)
-
-    def to_str_grid(self) -> List[List[str]]:
-        """ Returns the board as a list of list of strings
-
-        The returned list is suitable for JSON serialization.
-
-        Returns:
-            list[list[str]]: A list of lists with the same
-            dimensions as the board. In each row, the values
-            in the list will be " " (no piece), "R" (red piece),
-            or "Y" (yellow piece)
-        """
-        rv = []
-        for row in self._board:
-            lst = []
-            for value in row:
-                if value is None:
-                    lst.append(" ")
-                else:
-                    lst.append(value.name[0])
-            rv.append(lst)
-        return rv
 
     #
     # PRIVATE METHODS
@@ -375,14 +513,3 @@ class ConnectMBoard:
             return True
 
         return False
-
-
-#
-# Define a type encompassing the ConnectMBoard class,
-# as well as its stub and mock classes.
-#
-
-from mocks import ConnectMBoardStub, ConnectMBoardMock, ConnectMBoardBotMock
-
-BoardType = Union[ConnectMBoard, ConnectMBoardStub,
-                  ConnectMBoardMock, ConnectMBoardBotMock]

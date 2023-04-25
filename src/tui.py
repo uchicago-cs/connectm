@@ -1,15 +1,15 @@
 """
 TUI for Connect Four
 """
-
+import sys
 import time
-from typing import Union, Dict
+from typing import Union, Dict, Optional, List
 
 import click
 from colorama import Fore, Style
 
-from connectm import ConnectMBoard, PieceColor, BoardType
-from mocks import ConnectMBoardMock, ConnectMBoardStub, ConnectMBoardBotMock
+from connectm import BaseConnectM, ConnectM, PieceColor
+from mocks import ConnectMMock, ConnectMStub
 from bot import RandomBot, SmartBot
 
 
@@ -23,11 +23,11 @@ class TUIPlayer:
 
     name: str
     bot: Union[None, RandomBot, SmartBot]
-    board: BoardType
+    connectm: ConnectMMock
     color: PieceColor
     bot_delay: float
 
-    def __init__(self, n: int, player_type: str, board: BoardType,
+    def __init__(self, n: int, player_type: str, connectm: ConnectMMock,
                  color: PieceColor, opponent_color: PieceColor, bot_delay: float):
         """ Constructor
 
@@ -46,11 +46,11 @@ class TUIPlayer:
             self.bot = None
         if player_type == "random-bot":
             self.name = f"Random Bot {n}"
-            self.bot = RandomBot(board, color, opponent_color)
+            self.bot = RandomBot(connectm, color, opponent_color)
         elif player_type == "smart-bot":
             self.name = f"Smart Bot {n}"
-            self.bot = SmartBot(board, color, opponent_color)
-        self.board = board
+            self.bot = SmartBot(connectm, color, opponent_color)
+        self.connectm = connectm
         self.color = color
         self.bot_delay = bot_delay
 
@@ -74,25 +74,24 @@ class TUIPlayer:
             # a valid column is not provided)
             while True:
                 v = input(Style.BRIGHT + f"{self.name}> " + Style.RESET_ALL)
-                if len(v) == 1 and v[0] in "1234567":
+                if v.isnumeric():
                     try:
                         col = int(v) - 1
-                        if self.board.can_drop(col):
+                        if col < self.connectm.num_cols and self.connectm.can_drop(col):
                             return col
                     except ValueError:
                         continue
 
 
-def print_board(board: BoardType) -> None:
+def print_board(grid: List[List[Optional[PieceColor]]]) -> None:
     """ Prints the board to the screen
 
     Args:
-        board: The board to print
+        grid: The board to print
 
     Returns: None
     """
 
-    grid = board.to_piece_grid()
     nrows = len(grid)
     ncols = len(grid[0])
 
@@ -118,7 +117,7 @@ def print_board(board: BoardType) -> None:
             print(Fore.BLUE + "└" + ("─┴" * (ncols-1)) + "─┘" + Style.RESET_ALL)
 
 
-def play_connect_4(board: BoardType, players: Dict[PieceColor, TUIPlayer]) -> None:
+def play_connect_4(connectm: BaseConnectM, players: Dict[PieceColor, TUIPlayer]) -> None:
     """ Plays a game of Connect Four on the terminal
 
     Args:
@@ -133,16 +132,16 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, TUIPlayer]) -> No
     current = players[PieceColor.YELLOW]
 
     # Keep playing until there is a winner:
-    while not board.is_done():
+    while not connectm.done:
         # Print the board
         print()
-        print_board(board)
+        print_board(connectm.grid)
         print()
 
         column = current.get_move()
 
         # Drop the piece
-        board.drop(column, current.color)
+        connectm.drop(column, current.color)
 
         # Update the player
         if current.color == PieceColor.YELLOW:
@@ -151,9 +150,9 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, TUIPlayer]) -> No
             current = players[PieceColor.YELLOW]
 
     print()
-    print_board(board)
+    print_board(connectm.grid)
 
-    winner = board.get_winner()
+    winner = connectm.winner
     if winner is not None:
         print(f"The winner is {players[winner].name}!")
     else:
@@ -165,6 +164,9 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, TUIPlayer]) -> No
 #
 
 @click.command(name="connect4-tui")
+@click.option('--rows', type=click.INT, default=6)
+@click.option('--cols', type=click.INT, default=7)
+@click.option('--m', type=click.INT, default=4)
 @click.option('--mode',
               type=click.Choice(['real', 'stub', 'mock'], case_sensitive=False),
               default="real")
@@ -175,13 +177,13 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, TUIPlayer]) -> No
               type=click.Choice(['human', 'random-bot', 'smart-bot'], case_sensitive=False),
               default="human")
 @click.option('--bot-delay', type=click.FLOAT, default=0.5)
-def cmd(mode, player1, player2, bot_delay):
+def cmd(rows, cols, m, mode, player1, player2, bot_delay):
     if mode == "real":
-        board = ConnectMBoard(nrows=6, ncols=7, m=4)
+        board = ConnectM(rows, cols, m)
     elif mode == "stub":
-        board = ConnectMBoardStub(nrows=6, ncols=7, m=4)
+        board = ConnectMStub(rows, cols, m)
     elif mode == "mock":
-        board = ConnectMBoardMock(nrows=6, ncols=7, m=4)
+        board = ConnectMMock(rows, cols, m)
 
     player1 = TUIPlayer(1, player1, board, PieceColor.YELLOW, PieceColor.RED, bot_delay)
     player2 = TUIPlayer(2, player2, board, PieceColor.RED, PieceColor.YELLOW, bot_delay)

@@ -8,7 +8,7 @@ from typing import Union
 
 import click
 
-from connectm import ConnectMBoard, PieceColor, BoardType
+from connectm import BaseConnectM, ConnectM, PieceColor
 
 
 #
@@ -20,11 +20,11 @@ class RandomBot:
     Simple Bot that just picks a move at random
     """
 
-    _board: BoardType
+    _connectm: BaseConnectM
     _color: PieceColor
     _opponent_color: PieceColor
 
-    def __init__(self, board: BoardType, color: PieceColor,
+    def __init__(self, connectm: BaseConnectM, color: PieceColor,
                  opponent_color: PieceColor):
         """ Constructor
 
@@ -33,7 +33,7 @@ class RandomBot:
             color: Bot's color
             opponent_color: Opponent's color
         """
-        self._board = board
+        self._connectm = connectm
         self._color = color
         self._opponent_color = opponent_color
 
@@ -44,8 +44,8 @@ class RandomBot:
 
         """
         possible_cols = []
-        for col in range(self._board.get_num_cols()):
-            if self._board.can_drop(col):
+        for col in range(self._connectm.num_cols):
+            if self._connectm.can_drop(col):
                 possible_cols.append(col)
 
         return random.choice(possible_cols)
@@ -61,11 +61,11 @@ class SmartBot:
     - Otherwise, pick a column at random.
     """
 
-    _board: BoardType
+    _connectm: BaseConnectM
     _color: PieceColor
     _opponent_color: PieceColor
 
-    def __init__(self, board: BoardType, color: PieceColor,
+    def __init__(self, connectm: BaseConnectM, color: PieceColor,
                  opponent_color: PieceColor):
         """ Constructor
 
@@ -75,7 +75,7 @@ class SmartBot:
             opponent_color: Opponent's color
         """
 
-        self._board = board
+        self._connectm = connectm
         self._color = color
         self._opponent_color = opponent_color
 
@@ -89,16 +89,16 @@ class SmartBot:
         opponent_win_moves = []
         nonwinning_moves = []
 
-        for col in range(self._board.get_num_cols()):
-            if not self._board.can_drop(col):
+        for col in range(self._connectm.num_cols):
+            if not self._connectm.can_drop(col):
                 continue
 
-            if self._board.drop_wins(col, self._color):
+            if self._connectm.drop_wins(col, self._color):
                 # If dropping a piece in this column
                 # wins us the game, then we make that
                 # move
                 return col
-            elif self._board.drop_wins(col, self._opponent_color):
+            elif self._connectm.drop_wins(col, self._opponent_color):
                 # If our opponent would win the game
                 # if they dropped a piece in this column,
                 # we save that column. We don't immediately
@@ -144,7 +144,7 @@ class BotPlayer:
     color: PieceColor
     wins: int
 
-    def __init__(self, name: str, board: BoardType, color: PieceColor,
+    def __init__(self, name: str, connectm: BaseConnectM, color: PieceColor,
                  opponent_color: PieceColor):
         """ Constructor
 
@@ -157,14 +157,14 @@ class BotPlayer:
         self.name = name
 
         if self.name == "random":
-            self.bot = RandomBot(board, color, opponent_color)
+            self.bot = RandomBot(connectm, color, opponent_color)
         elif self.name == "smart":
-            self.bot = SmartBot(board, color, opponent_color)
+            self.bot = SmartBot(connectm, color, opponent_color)
         self.color = color
         self.wins = 0
 
 
-def simulate(board: BoardType, n: int, bots) -> None:
+def simulate(connectm: BaseConnectM, n: int, bots) -> None:
     """ Simulates multiple games between two bots
 
     Args:
@@ -179,15 +179,15 @@ def simulate(board: BoardType, n: int, bots) -> None:
     """
     for _ in range(n):
         # Reset the board
-        board.reset()
+        connectm.reset()
 
         # The starting player is Yellow
         current = bots[PieceColor.YELLOW]
 
         # While the game isn't over, make a move
-        while not board.is_done():
+        while not connectm.done:
             column = current.bot.suggest_move()
-            board.drop(column, current.color)
+            connectm.drop(column, current.color)
 
             # Update the player
             if current.color == PieceColor.YELLOW:
@@ -197,7 +197,7 @@ def simulate(board: BoardType, n: int, bots) -> None:
 
         # If there is a winner, add one to that
         # bot's tally
-        winner = board.get_winner()
+        winner = connectm.winner
         if winner is not None:
             bots[winner].wins += 1
 
@@ -211,7 +211,7 @@ def simulate(board: BoardType, n: int, bots) -> None:
               type=click.Choice(['random', 'smart'], case_sensitive=False),
               default="random")
 def cmd(num_games, player1, player2):
-    board = ConnectMBoard(nrows=6, ncols=7, m=4)
+    board = ConnectM(nrows=6, ncols=7, m=4)
 
     bot1 = BotPlayer(player1, board, PieceColor.YELLOW, PieceColor.RED)
     bot2 = BotPlayer(player2, board, PieceColor.RED, PieceColor.YELLOW)

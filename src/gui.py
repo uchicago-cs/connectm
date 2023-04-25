@@ -10,13 +10,12 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import click
 
-from connectm import ConnectMBoard, PieceColor, BoardType
-from mocks import ConnectMBoardStub, ConnectMBoardMock
+from connectm import BaseConnectM, ConnectM, PieceColor
+from mocks import ConnectMStub, ConnectMMock
 from bot import RandomBot, SmartBot
 
-WIDTH = 600
-HEIGHT = 400
-
+DEFAULT_SIDE = 75
+SMALL_SIDE = 40
 
 class GUIPlayer:
     """
@@ -28,10 +27,10 @@ class GUIPlayer:
 
     name: str
     bot: Union[None, RandomBot, SmartBot]
-    board: BoardType
+    connectm: BaseConnectM
     color: PieceColor
 
-    def __init__(self, n: int, player_type: str, board: BoardType,
+    def __init__(self, n: int, player_type: str, connectm: BaseConnectM,
                  color: PieceColor, opponent_color: PieceColor):
         """ Constructor
 
@@ -48,15 +47,15 @@ class GUIPlayer:
             self.bot = None
         if player_type == "random-bot":
             self.name = f"Random Bot {n}"
-            self.bot = RandomBot(board, color, opponent_color)
+            self.bot = RandomBot(connectm, color, opponent_color)
         elif player_type == "smart-bot":
             self.name = f"Smart Bot {n}"
-            self.bot = SmartBot(board, color, opponent_color)
-        self.board = board
+            self.bot = SmartBot(connectm, color, opponent_color)
+        self.connectm = connectm
         self.color = color
 
 
-def draw_board(surface: pygame.surface.Surface, board: BoardType) -> None:
+def draw_board(surface: pygame.surface.Surface, connectm: BaseConnectM) -> None:
     """ Draws the current state of the board in the window
 
     Args:
@@ -66,15 +65,17 @@ def draw_board(surface: pygame.surface.Surface, board: BoardType) -> None:
     Returns: None
 
     """
-    grid = board.to_piece_grid()
-    nrows = len(grid)
-    ncols = len(grid[0])
+    grid = connectm.grid
+    nrows = connectm.num_rows
+    ncols = connectm.num_cols
+
+    width, height = surface.get_size()
 
     surface.fill((64, 128, 255))
 
     # Compute the row height and column width
-    rh = HEIGHT // nrows + 1
-    cw = WIDTH // ncols + 1
+    rh = height // nrows
+    cw = width // ncols
 
     # Draw the borders around each cell
     for row in range(nrows):
@@ -99,7 +100,7 @@ def draw_board(surface: pygame.surface.Surface, board: BoardType) -> None:
                                center=center, radius=radius)
 
 
-def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
+def play_connect_4(connectm: BaseConnectM, players: Dict[PieceColor, GUIPlayer],
                    bot_delay: float) -> None:
     """ Plays a game of Connect Four on a Pygame window
 
@@ -114,16 +115,24 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
 
     """
 
+    if connectm.num_rows * connectm.num_cols <= 42:
+        side = DEFAULT_SIDE
+    else:
+        side = SMALL_SIDE
+
+    width = side * connectm.num_cols
+    height = side * connectm.num_rows
+
     # Initialize Pygame
     pygame.init()
     pygame.display.set_caption("Connect Four")
-    surface = pygame.display.set_mode((WIDTH, HEIGHT))
+    surface = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
 
     # The starting player is yellow
     current = players[PieceColor.YELLOW]
 
-    while not board.is_done():
+    while not connectm.done:
         # Process Pygame events
         # If a key is pressed, check whether it's
         # a column key (1-7).
@@ -135,14 +144,22 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
                 pygame.quit()
                 sys.exit()
 
-            # Check for key events, but only if the
+            # Check for key and mouse events, but only if the
             # current player is a human
-            if current.bot is None and event.type == pygame.KEYUP:
-                key = event.unicode
-                if key in "1234567":
-                    v = int(key) - 1
-                    if board.can_drop(v):
+            if current.bot is None: 
+                if event.type == pygame.KEYUP and connectm.num_cols <= 10:
+                    key = event.unicode
+                    v = None
+                    if key in "123456789":
+                        v = int(key) - 1
+                    elif key == "0":
+                        v = 9
+
+                    if v is not None and connectm.can_drop(v):
                         column = v
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    x = event.pos[0]
+                    column = x // side
 
         # If the current player is a bot, have it suggest
         # a move
@@ -154,7 +171,7 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
         # (either because a human user pressed a key,
         # or a bot suggested one), make a move
         if column is not None:
-            board.drop(column, current.color)
+            connectm.drop(column, current.color)
 
             # Update the player
             if current.color == PieceColor.YELLOW:
@@ -163,12 +180,12 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
                 current = players[PieceColor.YELLOW]
 
         # Update the display
-        draw_board(surface, board)
+        draw_board(surface, connectm)
         pygame.display.update()
         clock.tick(24)
 
     # Print the winner (on the terminal)
-    winner = board.get_winner()
+    winner = connectm.winner
     if winner is not None:
         print(f"The winner is {players[winner].name}!")
     else:
@@ -180,6 +197,9 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
 #
 
 @click.command(name="connect4-gui")
+@click.option('--rows', type=click.INT, default=6)
+@click.option('--cols', type=click.INT, default=7)
+@click.option('--m', type=click.INT, default=4)
 @click.option('--mode',
               type=click.Choice(['real', 'stub', 'mock'], case_sensitive=False),
               default="real")
@@ -190,20 +210,20 @@ def play_connect_4(board: BoardType, players: Dict[PieceColor, GUIPlayer],
               type=click.Choice(['human', 'random-bot', 'smart-bot'], case_sensitive=False),
               default="human")
 @click.option('--bot-delay', type=click.FLOAT, default=0.5)
-def cmd(mode, player1, player2, bot_delay):
+def cmd(rows, cols, m, mode, player1, player2, bot_delay):
     if mode == "real":
-        board = ConnectMBoard(nrows=6, ncols=7, m=4)
+        connectm = ConnectM(rows, cols, m)
     elif mode == "stub":
-        board = ConnectMBoardStub(nrows=6, ncols=7, m=4)
+        connectm = ConnectMStub(rows, cols, m)
     elif mode == "mock":
-        board = ConnectMBoardMock(nrows=6, ncols=7, m=4)
+        connectm = ConnectMMock(rows, cols, m)
 
-    player1 = GUIPlayer(1, player1, board, PieceColor.YELLOW, PieceColor.RED)
-    player2 = GUIPlayer(2, player2, board, PieceColor.RED, PieceColor.YELLOW)
+    player1 = GUIPlayer(1, player1, connectm, PieceColor.YELLOW, PieceColor.RED)
+    player2 = GUIPlayer(2, player2, connectm, PieceColor.RED, PieceColor.YELLOW)
 
     players = {PieceColor.YELLOW: player1, PieceColor.RED: player2}
 
-    play_connect_4(board, players, bot_delay)
+    play_connect_4(connectm, players, bot_delay)
 
 if __name__ == "__main__":
     cmd()

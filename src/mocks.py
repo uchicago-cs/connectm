@@ -2,12 +2,12 @@
 Stub and mock implementations of the ConnectMBoard class
 """
 
-from connectm import PieceColor
+from connectm import BaseConnectM, PieceColor
 from typing import Optional, List
 from copy import deepcopy
 
 
-class ConnectMBoardStub:
+class ConnectMStub(BaseConnectM):
     """
     Stub implementation of the ConnectMBoard class
     """
@@ -36,23 +36,20 @@ class ConnectMBoardStub:
     def reset(self) -> None:
         pass
 
-    def is_done(self) -> bool:
+    @property
+    def done(self) -> bool:
         return False
 
-    def get_winner(self) -> Optional[PieceColor]:
+    @property
+    def winner(self) -> Optional[PieceColor]:
         return None
 
-    def get_num_cols(self) -> int:
-        return self._ncols
-
-    def to_piece_grid(self) -> List[List[Optional[PieceColor]]]:
+    @property
+    def grid(self) -> List[List[Optional[PieceColor]]]:
         return deepcopy(self._board)
 
-    def to_str_grid(self) -> List[List[str]]:
-        return [[" "] * self._ncols for _ in range(self._nrows)]
 
-
-class ConnectMBoardMock:
+class ConnectMMock(BaseConnectM):
     """
     Mock implementation of the ConnectMBoard class
 
@@ -107,10 +104,12 @@ class ConnectMBoardMock:
     def reset(self) -> None:
         self._board = [[None] * self._ncols for _ in range(self._nrows)]
 
-    def is_done(self) -> bool:
+    @property
+    def done(self) -> bool:
         return self._nummoves == self._m
 
-    def get_winner(self) -> Optional[PieceColor]:
+    @property
+    def winner(self) -> Optional[PieceColor]:
         if self._nummoves == self._m:
             if self._m % 2 == 0:
                 return PieceColor.RED
@@ -119,22 +118,12 @@ class ConnectMBoardMock:
         else:
             return None
 
-    def get_num_cols(self) -> int:
-        return self._ncols
-
-    def to_piece_grid(self) -> List[List[Optional[PieceColor]]]:
+    @property
+    def grid(self) -> List[List[Optional[PieceColor]]]:
         return deepcopy(self._board)
 
-    def to_str_grid(self) -> List[List[str]]:
-        str_board = [[" "] * self._ncols for _ in range(self._nrows)]
-        for i, v in enumerate(self._board[-1]):
-            if v is not None:
-                str_board[-1][i] = v.name[0]
 
-        return str_board
-
-
-class ConnectMBoardBotMock:
+class ConnectMBoardBotMock(BaseConnectM):
     """
     Mock implementation of the ConnectMBoard class,
     specifically for testing the bots.
@@ -184,17 +173,18 @@ class ConnectMBoardBotMock:
     def reset(self) -> None:
         return None
 
-    def is_done(self) -> bool:
+    @property
+    def done(self) -> bool:
         return False
 
-    def get_winner(self) -> Optional[PieceColor]:
+    @property
+    def winner(self) -> Optional[PieceColor]:
         return None
 
-    def get_num_cols(self) -> int:
+    @property
+    def num_cols(self) -> int:
         return self._ncols
 
-    def to_piece_grid(self) -> List[List[Optional[PieceColor]]]:
-        return []
-
-    def to_str_grid(self) -> List[List[str]]:
+    @property
+    def grid(self) -> List[List[Optional[PieceColor]]]:
         return []
