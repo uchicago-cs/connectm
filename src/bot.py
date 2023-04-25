@@ -8,7 +8,7 @@ from typing import Union
 
 import click
 
-from connectm import BaseConnectM, ConnectM, PieceColor
+from connectm import ConnectMBase, ConnectM, PieceColor
 
 
 #
@@ -20,11 +20,11 @@ class RandomBot:
     Simple Bot that just picks a move at random
     """
 
-    _connectm: BaseConnectM
+    _connectm: ConnectMBase
     _color: PieceColor
     _opponent_color: PieceColor
 
-    def __init__(self, connectm: BaseConnectM, color: PieceColor,
+    def __init__(self, connectm: ConnectMBase, color: PieceColor,
                  opponent_color: PieceColor):
         """ Constructor
 
@@ -61,11 +61,11 @@ class SmartBot:
     - Otherwise, pick a column at random.
     """
 
-    _connectm: BaseConnectM
+    _connectm: ConnectMBase
     _color: PieceColor
     _opponent_color: PieceColor
 
-    def __init__(self, connectm: BaseConnectM, color: PieceColor,
+    def __init__(self, connectm: ConnectMBase, color: PieceColor,
                  opponent_color: PieceColor):
         """ Constructor
 
@@ -144,7 +144,7 @@ class BotPlayer:
     color: PieceColor
     wins: int
 
-    def __init__(self, name: str, connectm: BaseConnectM, color: PieceColor,
+    def __init__(self, name: str, connectm: ConnectMBase, color: PieceColor,
                  opponent_color: PieceColor):
         """ Constructor
 
@@ -164,7 +164,7 @@ class BotPlayer:
         self.wins = 0
 
 
-def simulate(connectm: BaseConnectM, n: int, bots) -> None:
+def simulate(connectm: ConnectMBase, n: int, bots) -> None:
     """ Simulates multiple games between two bots
 
     Args:

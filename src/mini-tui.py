@@ -1,24 +1,26 @@
-from connectm import ConnectM, PieceColor
+import sys
 
-def play_connect_4():
-    # Create the game
-    connectm = ConnectM(nrows=6, ncols=7, m=4)
+from connectm import ConnectMBase, ConnectM, PieceColor
+from mocks import ConnectMStub, ConnectMMock
 
+def play_connect_4(connectm: ConnectMBase) -> None:
     # The starting player is yellow
     current = PieceColor.YELLOW
 
     # Keep playing until there is a winner:
     while True:
         # Print the board
+        print()
         print(connectm)
+        print()
 
         # Ask for a column (and re-ask if
         # a valid column is not provided)
         column = None
         while column is None:
-            v = input("> ")
-            if v in "1234567":
-                v = int(v) - 1
+            user_input = input("> ")
+            if user_input in "1234567":
+                v = int(user_input) - 1
                 if connectm.can_drop(v):
                     column = v
 
@@ -39,4 +41,13 @@ def play_connect_4():
     print(f"The winner is {current.name}!")
 
 if __name__ == "__main__":
-    play_connect_4()
+    game: ConnectMBase
+    
+    if len(sys.argv) == 2 and sys.argv[1] == "stub":
+        game = ConnectMStub(nrows=6, ncols=7, m=4)
+    elif len(sys.argv) == 2 and sys.argv[1] == "mock":
+        game = ConnectMMock(nrows=6, ncols=7, m=4)
+    else:
+        game = ConnectM(nrows=6, ncols=7, m=4)
+
+    play_connect_4(game)

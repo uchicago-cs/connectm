@@ -10,7 +10,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import click
 
-from connectm import BaseConnectM, ConnectM, PieceColor
+from connectm import ConnectMBase, ConnectM, PieceColor
 from mocks import ConnectMStub, ConnectMMock
 from bot import RandomBot, SmartBot
 
@@ -27,10 +27,10 @@ class GUIPlayer:
 
     name: str
     bot: Union[None, RandomBot, SmartBot]
-    connectm: BaseConnectM
+    connectm: ConnectMBase
     color: PieceColor
 
-    def __init__(self, n: int, player_type: str, connectm: BaseConnectM,
+    def __init__(self, n: int, player_type: str, connectm: ConnectMBase,
                  color: PieceColor, opponent_color: PieceColor):
         """ Constructor
 
@@ -55,7 +55,7 @@ class GUIPlayer:
         self.color = color
 
 
-def draw_board(surface: pygame.surface.Surface, connectm: BaseConnectM) -> None:
+def draw_board(surface: pygame.surface.Surface, connectm: ConnectMBase) -> None:
     """ Draws the current state of the board in the window
 
     Args:
@@ -100,7 +100,7 @@ def draw_board(surface: pygame.surface.Surface, connectm: BaseConnectM) -> None:
                                center=center, radius=radius)
 
 
-def play_connect_4(connectm: BaseConnectM, players: Dict[PieceColor, GUIPlayer],
+def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, GUIPlayer],
                    bot_delay: float) -> None:
     """ Plays a game of Connect Four on a Pygame window
 

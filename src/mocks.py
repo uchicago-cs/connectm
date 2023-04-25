@@ -2,12 +2,12 @@
 Stub and mock implementations of the ConnectMBoard class
 """
 
-from connectm import BaseConnectM, PieceColor
+from connectm import ConnectMBase, PieceColor
 from typing import Optional, List
 from copy import deepcopy
 
 
-class ConnectMStub(BaseConnectM):
+class ConnectMStub(ConnectMBase):
     """
     Stub implementation of the ConnectMBoard class
     """
@@ -49,7 +49,7 @@ class ConnectMStub(BaseConnectM):
         return deepcopy(self._board)
 
 
-class ConnectMMock(BaseConnectM):
+class ConnectMMock(ConnectMBase):
     """
     Mock implementation of the ConnectMBoard class
 
@@ -76,13 +76,17 @@ class ConnectMMock(BaseConnectM):
         self._nummoves = 0
 
     def __str__(self) -> str:
-        s = "\n" * (self._nrows - 1)
-        for p in self._board[-1]:
-            if p is None:
-                s += " "
-            else:
-                s += p.name[0]
-        return s
+        lines = []
+        for row in self._board:
+            s = ""
+            for p in row:
+                if p is None:
+                    s += "·"
+                else:
+                    s += p.name[0]
+            lines.append(s)
+            
+        return "\n".join(lines)
 
     def can_drop(self, col: int) -> bool:
         return self._board[-1][col] is None
@@ -123,7 +127,7 @@ class ConnectMMock(BaseConnectM):
         return deepcopy(self._board)
 
 
-class ConnectMBoardBotMock(BaseConnectM):
+class ConnectMBoardBotMock(ConnectMBase):
     """
     Mock implementation of the ConnectMBoard class,
     specifically for testing the bots.

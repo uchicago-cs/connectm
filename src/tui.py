@@ -8,7 +8,7 @@ from typing import Union, Dict, Optional, List
 import click
 from colorama import Fore, Style
 
-from connectm import BaseConnectM, ConnectM, PieceColor
+from connectm import ConnectMBase, ConnectM, PieceColor
 from mocks import ConnectMMock, ConnectMStub
 from bot import RandomBot, SmartBot
 
@@ -117,7 +117,7 @@ def print_board(grid: List[List[Optional[PieceColor]]]) -> None:
             print(Fore.BLUE + "└" + ("─┴" * (ncols-1)) + "─┘" + Style.RESET_ALL)
 
 
-def play_connect_4(connectm: BaseConnectM, players: Dict[PieceColor, TUIPlayer]) -> None:
+def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, TUIPlayer]) -> None:
     """ Plays a game of Connect Four on the terminal
 
     Args:

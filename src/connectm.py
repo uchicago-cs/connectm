@@ -34,7 +34,7 @@ PieceColor = Enum("PieceColor", ["RED", "YELLOW"])
 Enum type for representing piece colors.
 """
 
-class BaseConnectM(ABC):
+class ConnectMBase(ABC):
     """
     Class for representing a Connect-M board
     """
@@ -210,7 +210,7 @@ class BaseConnectM(ABC):
         raise NotImplementedError
 
 
-class ConnectM(BaseConnectM):
+class ConnectM(ConnectMBase):
     """
     Class for representing a Connect-M board
     """
