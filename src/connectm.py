@@ -1,29 +1,7 @@
 """
-Classes (actually just one) for implementing Connect-M
-(a general version of Connect-4).
-
-Examples:
-
-    1) Creating a board::
-
-        board = ConnectMBoard(6, 7, 4)
-
-    2) Dropping a piece::
-
-        if board.can_drop(col):
-            board.drop(col, PieceColor.RED)
-
-    3) Checking for a winner::
-
-        winner = board.get_winner()
-        if winner == PieceColor.RED:
-            print("Red wins!")
-        elif winner == PieceColor.YELLOW:
-            print("Yellow wins!")
-        else:
-            print("No winner")
-
+Classes for Connect-M (a generalized form of Connect Four)
 """
+
 import copy
 from abc import ABC, abstractmethod
 from enum import Enum

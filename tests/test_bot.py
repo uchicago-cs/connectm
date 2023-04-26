@@ -2,7 +2,7 @@ import random
 
 from bot import RandomBot, SmartBot
 from connectm import PieceColor
-from mocks import ConnectMBoardBotMock
+from mocks import ConnectMBotMock
 
 
 def test_random_1():
@@ -11,7 +11,7 @@ def test_random_1():
     column number (when pieces can be dropped
     in any column)
     """
-    board = ConnectMBoardBotMock(6, 7, 4)
+    board = ConnectMBotMock(6, 7, 4)
     bot = RandomBot(board, PieceColor.YELLOW, PieceColor.RED)
 
     col = bot.suggest_move()
@@ -24,7 +24,7 @@ def test_random_2():
     Checks that, if pieces can't be dropped in certain
     columns, we don't get back any of those columns.
     """
-    board = ConnectMBoardBotMock(6, 7, 4)
+    board = ConnectMBotMock(6, 7, 4)
     bot = RandomBot(board, PieceColor.YELLOW, PieceColor.RED)
 
     board._can_drop = [True, True, False, True, False, True, True]
@@ -42,7 +42,7 @@ def test_random_3():
     Checks that, if pieces can only be dropped in a single
     column, we only get back that column
     """
-    board = ConnectMBoardBotMock(6, 7, 4)
+    board = ConnectMBotMock(6, 7, 4)
     bot = RandomBot(board, PieceColor.YELLOW, PieceColor.RED)
 
     board._can_drop = [False, False, False, True, False, False, False]
@@ -60,7 +60,7 @@ def test_smart_1():
     Checks that, if there is a winning move for the bot's
     color, it will take it.
     """
-    board = ConnectMBoardBotMock(6, 7, 4)
+    board = ConnectMBotMock(6, 7, 4)
     bot = SmartBot(board, PieceColor.YELLOW, PieceColor.RED)
 
     board._drop_wins = [None, None, PieceColor.YELLOW,
@@ -76,7 +76,7 @@ def test_smart_2():
     Checks that, if there is no winning move, but there is a
     blocking move, it will take it.
     """
-    board = ConnectMBoardBotMock(6, 7, 4)
+    board = ConnectMBotMock(6, 7, 4)
     bot = SmartBot(board, PieceColor.YELLOW, PieceColor.RED)
 
     bot._drop_wins = [None, None, None, None, PieceColor.RED,
@@ -93,7 +93,7 @@ def test_smart_3():
     a blocking move, it returns columns you can drop pieces
     into.
     """
-    board = ConnectMBoardBotMock(6, 7, 4)
+    board = ConnectMBotMock(6, 7, 4)
     bot = SmartBot(board, PieceColor.YELLOW, PieceColor.RED)
 
     board._can_drop = [True, True, False, True, False, True, True]

@@ -1,5 +1,5 @@
 """
-Stub and mock implementations of the ConnectMBoard class
+Stub and mock implementations of the ConnectMBase class
 """
 
 from connectm import ConnectMBase, PieceColor
@@ -9,7 +9,7 @@ from copy import deepcopy
 
 class ConnectMStub(ConnectMBase):
     """
-    Stub implementation of the ConnectMBoard class
+    Stub implementation of the ConnectMBase class
     """
 
     _board: List[List[Optional[PieceColor]]]
@@ -51,7 +51,7 @@ class ConnectMStub(ConnectMBase):
 
 class ConnectMMock(ConnectMBase):
     """
-    Mock implementation of the ConnectMBoard class
+    Mock implementation of the ConnectMBase class
 
     Expected behaviours:
     - Stores the full board internally, but we only ever
@@ -127,9 +127,9 @@ class ConnectMMock(ConnectMBase):
         return deepcopy(self._board)
 
 
-class ConnectMBoardBotMock(ConnectMBase):
+class ConnectMBotMock(ConnectMBase):
     """
-    Mock implementation of the ConnectMBoard class,
+    Mock implementation of the ConnectMBase class,
     specifically for testing the bots.
 
     Since the bots only care about whether a drop is

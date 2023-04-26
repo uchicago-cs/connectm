@@ -49,6 +49,11 @@ next move. You must specify a column number (1 through 7) where
 you would like to drop a piece. If the number is not valid for
 any reason, you will be prompted again.
 
+By default the TUI creates a Connect Four board (six rows, seven
+column, and four contiguous pieces needed to win). You can specify 
+an alternate number of rows, columns, or contiguous pieces to win
+with the `--rows`, `--columns`, and `--m` parameters (respectively)
+
 You can also play against a bot like this:
 
     python3 src/tui.py --player2 <bot>
@@ -70,9 +75,15 @@ To run the GUI, run the following from the root of the repository:
 
     python3 src/gui.py
 
-The GUI displays the state of the board. To drop a piece, press
-a key between 1 and 7 (depending on what column you want to drop
-a piece in).
+The GUI displays the state of the board. To drop a piece, click
+on the column you'd like to drop a piece in. If board with 10
+or less columns, you can also press a key 1 and 9, or 0 for 10 
+(depending on what column you want to drop a piece in).
+
+By default the GUI creates a Connect Four board (six rows, seven
+column, and four contiguous pieces needed to win). You can specify 
+an alternate number of rows, columns, or contiguous pieces to win
+with the `--rows`, `--columns`, and `--m` parameters (respectively)
 
 Like the TUI, you can play against a bot, or have two bots play
 against each other like this:
@@ -89,7 +100,7 @@ The ``bots.py`` file includes two classes:
 
 - ``RandomBot``: A bot that will just choose a move at random
 - ``SmartBot``: A bot that will try to make a winning move if possible.
-  If not such move is possible, it checks whether the opposing player
+  If no such move is possible, it checks whether the opposing player
   would win in the next move and, if so, it blocks that move. Otherwise,
   it just picks a move at random.
 
@@ -112,17 +123,24 @@ to ``bots.py``.
 
 # Running with stubs and mocks
 
-Stub and mock implementations of the ``ConnectMBoard`` class are
+Stub and mock implementations of the ``ConnectMBase`` class are
 available in the ``mocks.py`` file. 
 
 The TUI and GUI both accept a ``--mode <mode>`` parameter, where
 ``<mode>`` is one of:
 
-- ``real``: Use the ``ConnectMBoard`` (default)
-- ``stub``: Use the ``ConnectMBoardStub`` 
-- ``mock``: Use the ``ConnectMBoardMock``
+- ``real``: Use the ``ConnectM`` class (default)
+- ``stub``: Use the ``ConnectMStub`` class
+- ``mock``: Use the ``ConnectMMock`` class
 
-The bots have their own mock class (``ConnectMBoardBotMock``),
+Additionally, we also include a simplified TUI that can be run
+like this:
+
+- `python3 src/mini-tui.py` to use the ``ConnectM`` class
+- `python3 src/mini-tui.py stub` to use the ``ConnectMStub`` class
+- `python3 src/mini-tui.py mock` to use the ``ConnectMMock`` class
+
+The bots have their own mock class (``ConnectMBotMock``),
 which is used in a series of automated tests that can be run
 like this:
 
