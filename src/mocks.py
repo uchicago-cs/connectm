@@ -13,13 +13,10 @@ class ConnectMStub(ConnectMBase):
     """
 
     _board: List[List[Optional[PieceColor]]]
-    _nrows: int
-    _ncols: int
 
     def __init__(self, nrows: int, ncols: int, m: int):
+        super().__init__(nrows, ncols, m)
         self._board = [[None] * ncols for _ in range(nrows)]
-        self._ncols = ncols
-        self._nrows = nrows
 
     def __str__(self) -> str:
         return "BOARD"
@@ -63,16 +60,11 @@ class ConnectMMock(ConnectMBase):
     """
 
     _board: List[List[Optional[PieceColor]]]
-    _nrows: int
-    _ncols: int
-    _m: int
     _nummoves: int
 
     def __init__(self, nrows: int, ncols: int, m: int):
+        super().__init__(nrows, ncols, m)
         self._board = [[None] * ncols for _ in range(nrows)]
-        self._ncols = ncols
-        self._nrows = nrows
-        self._m = m
         self._nummoves = 0
 
     def __str__(self) -> str:
@@ -149,12 +141,11 @@ class ConnectMBotMock(ConnectMBase):
 
     _can_drop: List[bool]
     _drop_wins: List[Optional[PieceColor]]
-    _ncols: int
 
     def __init__(self, nrows: int, ncols: int, m: int):
+        super().__init__(nrows, ncols, m)
         self._can_drop = [True] * ncols
         self._drop_wins = [None] * ncols
-        self._ncols = ncols
 
     def __str__(self) -> str:
         return "BOARD"
@@ -184,10 +175,6 @@ class ConnectMBotMock(ConnectMBase):
     @property
     def winner(self) -> Optional[PieceColor]:
         return None
-
-    @property
-    def num_cols(self) -> int:
-        return self._ncols
 
     @property
     def grid(self) -> List[List[Optional[PieceColor]]]:
