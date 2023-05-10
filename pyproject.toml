@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=67.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "connectm"
+version = "1.0.0"
+authors = [
+  { name="University of Chicago - Department of Computer Science", email="borja@cs.uchicago.edu" },
+]
+description = "Connect-M"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    'License :: OSI Approved :: BSD License',
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+connectm-gui = "gui:cmd"
+connectm-tui = "tui:cmd"
+connectm-bot = "bot:cmd"
+
+[project.urls]
+"Homepage" = "https://github.com/uchicago-cs/connectm"
+"Bug Tracker" = "https://github.com/uchicago-cs/connectm/issues"
