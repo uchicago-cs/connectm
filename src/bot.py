@@ -4,11 +4,11 @@ Bots for Connect-M
 (and command for running simulations with bots)
 """
 import random
-from typing import Union
 
 import click
 
-from connectm import ConnectMBase, ConnectM, PieceColor
+from base import ConnectMBase, PieceColor
+from connectm import ConnectM
 
 
 #
@@ -29,7 +29,7 @@ class RandomBot:
         """ Constructor
 
         Args:
-            board: Board the bot will play on
+            connectm: The Connect-M board
             color: Bot's color
             opponent_color: Opponent's color
         """
@@ -70,7 +70,7 @@ class SmartBot:
         """ Constructor
 
         Args:
-            board: Board the bot will play on
+            connectm: The Connect-M board the bot will play in
             color: Bot's color
             opponent_color: Opponent's color
         """
@@ -140,7 +140,7 @@ class BotPlayer:
     """
 
     name: str
-    bot: Union[RandomBot, SmartBot]
+    bot: RandomBot | SmartBot
     color: PieceColor
     wins: int
 
@@ -150,7 +150,7 @@ class BotPlayer:
 
         Args:
             name: Name of the bot
-            board: Board to play on
+            connectm: The Connect-M board the bot will play in
             color: Bot's color
             opponent_color: Opponent's color
         """
@@ -164,11 +164,11 @@ class BotPlayer:
         self.wins = 0
 
 
-def simulate(connectm: ConnectMBase, n: int, bots) -> None:
+def simulate(connectm: ConnectMBase, n: int, bots: dict[PieceColor, BotPlayer]) -> None:
     """ Simulates multiple games between two bots
 
     Args:
-        board: The board to play on
+        connectm: The Connect-M board the bot will play in
         n: The number of matches to play
         bots: Dictionary mapping piece colors to
             BotPlayer objects (the bots what will
@@ -210,7 +210,7 @@ def simulate(connectm: ConnectMBase, n: int, bots) -> None:
 @click.option('--player2',
               type=click.Choice(['random', 'smart'], case_sensitive=False),
               default="random")
-def cmd(num_games, player1, player2):
+def cmd(num_games: int, player1: str, player2: str) -> None:
     board = ConnectM(nrows=6, ncols=7, m=4)
 
     bot1 = BotPlayer(player1, board, PieceColor.YELLOW, PieceColor.RED)

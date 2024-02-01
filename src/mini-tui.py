@@ -1,7 +1,7 @@
 import sys
 
 from connectm import ConnectMBase, ConnectM, PieceColor
-from mocks import ConnectMStub, ConnectMMock
+from fakes import ConnectMStub, ConnectMFake
 
 def play_connect_4(connectm: ConnectMBase) -> None:
     # The starting player is yellow
@@ -45,8 +45,8 @@ if __name__ == "__main__":
     
     if len(sys.argv) == 2 and sys.argv[1] == "stub":
         game = ConnectMStub(nrows=6, ncols=7, m=4)
-    elif len(sys.argv) == 2 and sys.argv[1] == "mock":
-        game = ConnectMMock(nrows=6, ncols=7, m=4)
+    elif len(sys.argv) == 2 and sys.argv[1] == "fake":
+        game = ConnectMFake(nrows=6, ncols=7, m=4)
     else:
         game = ConnectM(nrows=6, ncols=7, m=4)
 

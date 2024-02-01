@@ -4,18 +4,19 @@ GUI for Connect Four
 
 import os
 import sys
-from typing import Union, Dict
+from typing import Union
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import click
 
 from connectm import ConnectMBase, ConnectM, PieceColor
-from mocks import ConnectMStub, ConnectMMock
+from fakes import ConnectMStub, ConnectMFake
 from bot import RandomBot, SmartBot
 
 DEFAULT_SIDE = 75
 SMALL_SIDE = 40
+
 
 class GUIPlayer:
     """
@@ -100,7 +101,7 @@ def draw_board(surface: pygame.surface.Surface, connectm: ConnectMBase) -> None:
                                center=center, radius=radius)
 
 
-def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, GUIPlayer],
+def play_connect_4(connectm: ConnectMBase, players: dict[PieceColor, GUIPlayer],
                    bot_delay: float) -> None:
     """ Plays a game of Connect Four on a Pygame window
 
@@ -201,7 +202,7 @@ def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, GUIPlayer],
 @click.option('--cols', type=click.INT, default=7)
 @click.option('--m', type=click.INT, default=4)
 @click.option('--mode',
-              type=click.Choice(['real', 'stub', 'mock'], case_sensitive=False),
+              type=click.Choice(['real', 'stub', 'fake'], case_sensitive=False),
               default="real")
 @click.option('--player1',
               type=click.Choice(['human', 'random-bot', 'smart-bot'], case_sensitive=False),
@@ -210,20 +211,22 @@ def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, GUIPlayer],
               type=click.Choice(['human', 'random-bot', 'smart-bot'], case_sensitive=False),
               default="human")
 @click.option('--bot-delay', type=click.FLOAT, default=0.5)
-def cmd(rows, cols, m, mode, player1, player2, bot_delay):
+def cmd(rows: int, cols: int, m: int, mode: str, player1: str, player2: str, bot_delay: float) -> None:
+    connectm: ConnectMBase
     if mode == "real":
         connectm = ConnectM(rows, cols, m)
     elif mode == "stub":
         connectm = ConnectMStub(rows, cols, m)
-    elif mode == "mock":
-        connectm = ConnectMMock(rows, cols, m)
+    elif mode == "fake":
+        connectm = ConnectMFake(rows, cols, m)
 
-    player1 = GUIPlayer(1, player1, connectm, PieceColor.YELLOW, PieceColor.RED)
-    player2 = GUIPlayer(2, player2, connectm, PieceColor.RED, PieceColor.YELLOW)
+    gui_player1 = GUIPlayer(1, player1, connectm, PieceColor.YELLOW, PieceColor.RED)
+    gui_player2 = GUIPlayer(2, player2, connectm, PieceColor.RED, PieceColor.YELLOW)
 
-    players = {PieceColor.YELLOW: player1, PieceColor.RED: player2}
+    players = {PieceColor.YELLOW: gui_player1, PieceColor.RED: gui_player2}
 
     play_connect_4(connectm, players, bot_delay)
+
 
 if __name__ == "__main__":
     cmd()

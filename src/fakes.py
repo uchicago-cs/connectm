@@ -1,9 +1,9 @@
 """
-Stub and mock implementations of the ConnectMBase class
+Fake implementations of the ConnectMBase class
 """
 
-from connectm import ConnectMBase, PieceColor
-from typing import Optional, List
+from base import ConnectMBase, PieceColor
+from typing import Optional
 from copy import deepcopy
 
 
@@ -12,7 +12,7 @@ class ConnectMStub(ConnectMBase):
     Stub implementation of the ConnectMBase class
     """
 
-    _board: List[List[Optional[PieceColor]]]
+    _board: list[list[Optional[PieceColor]]]
 
     def __init__(self, nrows: int, ncols: int, m: int):
         super().__init__(nrows, ncols, m)
@@ -42,13 +42,13 @@ class ConnectMStub(ConnectMBase):
         return None
 
     @property
-    def grid(self) -> List[List[Optional[PieceColor]]]:
+    def grid(self) -> list[list[Optional[PieceColor]]]:
         return deepcopy(self._board)
 
 
-class ConnectMMock(ConnectMBase):
+class ConnectMFake(ConnectMBase):
     """
-    Mock implementation of the ConnectMBase class
+    Fake implementation of the ConnectMBase class
 
     Expected behaviours:
     - Stores the full board internally, but we only ever
@@ -59,7 +59,7 @@ class ConnectMMock(ConnectMBase):
       otherwise, Yellow wins.
     """
 
-    _board: List[List[Optional[PieceColor]]]
+    _board: list[list[Optional[PieceColor]]]
     _nummoves: int
 
     def __init__(self, nrows: int, ncols: int, m: int):
@@ -115,13 +115,13 @@ class ConnectMMock(ConnectMBase):
             return None
 
     @property
-    def grid(self) -> List[List[Optional[PieceColor]]]:
+    def grid(self) -> list[list[Optional[PieceColor]]]:
         return deepcopy(self._board)
 
 
-class ConnectMBotMock(ConnectMBase):
+class ConnectMBotFake(ConnectMBase):
     """
-    Mock implementation of the ConnectMBase class,
+    Fake implementation of the ConnectMBase class,
     specifically for testing the bots.
 
     Since the bots only care about whether a drop is
@@ -130,7 +130,7 @@ class ConnectMBotMock(ConnectMBase):
     and get_num_cols (and stub out the remaining
     methods).
 
-    The mock will use two lists: one to specify
+    This fake will use two lists: one to specify
     whether a piece can be dropped in a given column,
     and another to specify whether a drop in a column
     will result in a win for a player. can_drop
@@ -139,8 +139,8 @@ class ConnectMBotMock(ConnectMBase):
 
     """
 
-    _can_drop: List[bool]
-    _drop_wins: List[Optional[PieceColor]]
+    _can_drop: list[bool]
+    _drop_wins: list[Optional[PieceColor]]
 
     def __init__(self, nrows: int, ncols: int, m: int):
         super().__init__(nrows, ncols, m)
@@ -177,5 +177,5 @@ class ConnectMBotMock(ConnectMBase):
         return None
 
     @property
-    def grid(self) -> List[List[Optional[PieceColor]]]:
+    def grid(self) -> list[list[Optional[PieceColor]]]:
         return []

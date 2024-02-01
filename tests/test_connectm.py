@@ -1,8 +1,7 @@
-from typing import Dict, Tuple
 from connectm import ConnectM, PieceColor
 
 def validate_grid(connectm: ConnectM,
-                  pieces: Dict[Tuple[int, int], PieceColor]):
+                  pieces: dict[tuple[int, int], PieceColor]) -> None:
     """
     Helper function that validates whether a ConnectM object
     has pieces in the expected positions.
@@ -58,7 +57,7 @@ def sample_board() -> ConnectM:
 
     return connectm
 
-def test_create_1():
+def test_create_1() -> None:
     """
     Tests creating a 6x7 board
     """
@@ -67,7 +66,7 @@ def test_create_1():
     assert not connectm.done
     assert connectm.winner is None
 
-def test_create_2():
+def test_create_2() -> None:
     """
     Tests creating a 20x20 board
     """
@@ -76,7 +75,7 @@ def test_create_2():
     assert not connectm.done
     assert connectm.winner is None
 
-def test_can_drop_1():
+def test_can_drop_1() -> None:
     """
     Tests that we can drop a piece in every column
     of an empty board
@@ -86,7 +85,7 @@ def test_can_drop_1():
     for i in range(7):
         assert connectm.can_drop(i)
 
-def test_can_drop_2():
+def test_can_drop_2() -> None:
     """
     Tests that we can drop a piece in every column
     of the sample board (except column 4, which is full)
@@ -98,7 +97,7 @@ def test_can_drop_2():
     
     assert not connectm.can_drop(4)
 
-def test_drop_wins_1():
+def test_drop_wins_1() -> None:
     """
     Tests that dropping a piece in any of the columns in an
     empty board does not result in a win.
@@ -109,7 +108,7 @@ def test_drop_wins_1():
         assert not connectm.drop_wins(i, PieceColor.RED)
         assert not connectm.drop_wins(i, PieceColor.YELLOW)
 
-def test_drop_wins_2():
+def test_drop_wins_2() -> None:
     """
     Tests that dropping a piece in any of the columns in an
     empty board does not result in a win, except dropping
@@ -124,7 +123,7 @@ def test_drop_wins_2():
     assert connectm.drop_wins(2, PieceColor.RED)
     assert not connectm.drop_wins(2, PieceColor.YELLOW)
 
-def test_drop_1():
+def test_drop_1() -> None:
     """
     Tests that we can correctly drop a piece
     """
@@ -134,7 +133,7 @@ def test_drop_1():
 
     validate_grid(connectm, {(5,0): PieceColor.YELLOW})
 
-def test_drop_2():
+def test_drop_2() -> None:
     """
     Tests that we can correctly drop two pieces
     (in two separate columns)
@@ -147,7 +146,7 @@ def test_drop_2():
     validate_grid(connectm, {(5,0): PieceColor.YELLOW,
                              (5,1): PieceColor.RED})
     
-def test_drop_3():
+def test_drop_3() -> None:
     """
     Tests that we can correctly drop two pieces
     (in the same column)
@@ -160,7 +159,7 @@ def test_drop_3():
     validate_grid(connectm, {(5,0): PieceColor.YELLOW,
                              (4,0): PieceColor.RED})
 
-def test_reset():
+def test_reset() -> None:
     """
     Tests that we can correctly reset the board
     (starting from the sample board)
@@ -169,7 +168,7 @@ def test_reset():
     connectm.reset()
     validate_grid(connectm, {})
 
-def test_win():
+def test_win() -> None:
     """
     Tests that dropping a red piece in column 2
     results in a win.

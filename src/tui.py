@@ -3,13 +3,13 @@ TUI for Connect Four
 """
 import sys
 import time
-from typing import Union, Dict, Optional, List
+from typing import Optional
 
 import click
 from colorama import Fore, Style
 
 from connectm import ConnectMBase, ConnectM, PieceColor
-from mocks import ConnectMMock, ConnectMStub
+from fakes import ConnectMStub, ConnectMFake
 from bot import RandomBot, SmartBot
 
 
@@ -22,19 +22,19 @@ class TUIPlayer:
     """
 
     name: str
-    bot: Union[None, RandomBot, SmartBot]
-    connectm: ConnectMMock
+    bot: None | RandomBot | SmartBot
+    connectm: ConnectMBase
     color: PieceColor
     bot_delay: float
 
-    def __init__(self, n: int, player_type: str, connectm: ConnectMMock,
+    def __init__(self, n: int, player_type: str, connectm: ConnectMBase,
                  color: PieceColor, opponent_color: PieceColor, bot_delay: float):
         """ Constructor
 
         Args:
             n: The player's number (1 or 2)
             player_type: "human", "random-bot", or "smart-bot"
-            board: The Connect-M board
+            connectm: The Connect-M board
             color: The player's color
             opponent_color: The opponent's color
             bot_delay: When playing as a bot, an artificial delay
@@ -83,7 +83,7 @@ class TUIPlayer:
                         continue
 
 
-def print_board(grid: List[List[Optional[PieceColor]]]) -> None:
+def print_board(grid: list[list[Optional[PieceColor]]]) -> None:
     """ Prints the board to the screen
 
     Args:
@@ -117,7 +117,7 @@ def print_board(grid: List[List[Optional[PieceColor]]]) -> None:
             print(Fore.BLUE + "└" + ("─┴" * (ncols-1)) + "─┘" + Style.RESET_ALL)
 
 
-def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, TUIPlayer]) -> None:
+def play_connect_4(connectm: ConnectMBase, players: dict[PieceColor, TUIPlayer]) -> None:
     """ Plays a game of Connect Four on the terminal
 
     Args:
@@ -168,7 +168,7 @@ def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, TUIPlayer])
 @click.option('--cols', type=click.INT, default=7)
 @click.option('--m', type=click.INT, default=4)
 @click.option('--mode',
-              type=click.Choice(['real', 'stub', 'mock'], case_sensitive=False),
+              type=click.Choice(['real', 'stub', 'fake'], case_sensitive=False),
               default="real")
 @click.option('--player1',
               type=click.Choice(['human', 'random-bot', 'smart-bot'], case_sensitive=False),
@@ -177,20 +177,21 @@ def play_connect_4(connectm: ConnectMBase, players: Dict[PieceColor, TUIPlayer])
               type=click.Choice(['human', 'random-bot', 'smart-bot'], case_sensitive=False),
               default="human")
 @click.option('--bot-delay', type=click.FLOAT, default=0.5)
-def cmd(rows, cols, m, mode, player1, player2, bot_delay):
+def cmd(rows: int, cols: int, m: int, mode: str, player1: str, player2: str, bot_delay: float) -> None:
+    connectm: ConnectMBase
     if mode == "real":
-        board = ConnectM(rows, cols, m)
+        connectm = ConnectM(rows, cols, m)
     elif mode == "stub":
-        board = ConnectMStub(rows, cols, m)
-    elif mode == "mock":
-        board = ConnectMMock(rows, cols, m)
+        connectm = ConnectMStub(rows, cols, m)
+    elif mode == "fake":
+        connectm = ConnectMFake(rows, cols, m)
 
-    player1 = TUIPlayer(1, player1, board, PieceColor.YELLOW, PieceColor.RED, bot_delay)
-    player2 = TUIPlayer(2, player2, board, PieceColor.RED, PieceColor.YELLOW, bot_delay)
+    tui_player1 = TUIPlayer(1, player1, connectm, PieceColor.YELLOW, PieceColor.RED, bot_delay)
+    tui_player2 = TUIPlayer(2, player2, connectm, PieceColor.RED, PieceColor.YELLOW, bot_delay)
 
-    players = {PieceColor.YELLOW: player1, PieceColor.RED: player2}
+    players = {PieceColor.YELLOW: tui_player1, PieceColor.RED: tui_player2}
 
-    play_connect_4(board, players)
+    play_connect_4(connectm, players)
 
 
 if __name__ == "__main__":
