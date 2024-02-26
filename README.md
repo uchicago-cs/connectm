@@ -121,27 +121,28 @@ and see the percentage of wins and ties. For example:
 You can control the number of simulated games using the ``-n <number of games>`` parameter
 to ``bots.py``.
 
-# Running with stubs and mocks
+# Running with stub and fake implementations
 
-Stub and mock implementations of the ``ConnectMBase`` class are
-available in the ``mocks.py`` file. 
+Stub and fake implementations of the ``ConnectMBase`` class are
+available in the ``fakes.py`` file. 
 
 The TUI and GUI both accept a ``--mode <mode>`` parameter, where
 ``<mode>`` is one of:
 
 - ``real``: Use the ``ConnectM`` class (default)
 - ``stub``: Use the ``ConnectMStub`` class
-- ``mock``: Use the ``ConnectMMock`` class
+- ``fake``: Use the ``ConnectMFake`` class
 
 Additionally, we also include a simplified TUI that can be run
 like this:
 
 - `python3 src/mini-tui.py` to use the ``ConnectM`` class
 - `python3 src/mini-tui.py stub` to use the ``ConnectMStub`` class
-- `python3 src/mini-tui.py mock` to use the ``ConnectMMock`` class
+- `python3 src/mini-tui.py fake` to use the ``ConnectMFake`` class
 
-The bots have their own mock class (``ConnectMBotMock``),
+The bots have their own fake class (``ConnectMBotFake``),
 which is used in a series of automated tests that can be run
+like this:
 like this:
 
     pytest tests/test_bot.py
