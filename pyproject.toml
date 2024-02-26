@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "connectm"
-version = "1.0.0"
+version = "1.1.0"
 authors = [
   { name="University of Chicago - Department of Computer Science", email="borja@cs.uchicago.edu" },
 ]
 description = "Connect-M"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     'License :: OSI Approved :: BSD License',
